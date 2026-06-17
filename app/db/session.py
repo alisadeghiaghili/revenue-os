@@ -1,12 +1,12 @@
 """
-app/db/session.py — Async SQLAlchemy engine and session factory.
+Async SQLAlchemy engine and session factory.
 
-Usage in FastAPI routes:
+Usage inside a FastAPI route::
 
     from app.db.session import get_db
 
-    @router.get("/items")
-    async def list_items(db: AsyncSession = Depends(get_db)):
+    @router.get("/example")
+    async def example(db: AsyncSession = Depends(get_db)):
         ...
 """
 
@@ -28,13 +28,13 @@ engine = create_async_engine(
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
-    expire_on_commit=False,
     class_=AsyncSession,
+    expire_on_commit=False,
 )
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency that yields a DB session and always closes it."""
+    """FastAPI dependency that yields a database session per request."""
     async with AsyncSessionLocal() as session:
         try:
             yield session

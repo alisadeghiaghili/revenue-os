@@ -1,8 +1,7 @@
 """
-tests/conftest.py — Shared pytest fixtures.
+Shared pytest fixtures.
 
-Add fixtures here that are reused across multiple test modules,
-e.g. a test DB session, async HTTP client, or a fake store_id.
+Add async DB fixtures, test client factory, and mock store_id header here.
 """
 
 import pytest
@@ -11,13 +10,8 @@ from httpx import AsyncClient
 from main import app
 
 
-@pytest.fixture(scope="session")
-def anyio_backend():
-    return "asyncio"
-
-
 @pytest.fixture
 async def client() -> AsyncClient:
-    """Async test client wired to the FastAPI app."""
+    """Async HTTP test client wired to the FastAPI app."""
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac

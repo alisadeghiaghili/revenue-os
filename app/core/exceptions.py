@@ -1,8 +1,8 @@
 """
-app/core/exceptions.py — Custom application exceptions.
+Application-level exception classes.
 
-Define domain-specific exception classes here.  Wire them to HTTP responses
-via FastAPI exception handlers registered in main.py.
+Raise these inside service / repository layers; the global exception
+handlers in main.py translate them into appropriate HTTP responses.
 """
 
 
@@ -19,4 +19,4 @@ class PermissionDeniedError(AppError):
 
 
 class ConflictError(AppError):
-    """Raised when an operation conflicts with existing state."""
+    """Raised when an operation violates a uniqueness constraint."""

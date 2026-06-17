@@ -1,33 +1,32 @@
 """
-app/workers/celery_app.py — Celery application factory.
+Celery application instance.
 
-To run the worker locally:
+To start the worker::
 
-    celery -A app.workers.celery_app.celery worker --loglevel=info
+    celery -A app.workers.celery_app worker --loglevel=info
 
-To run the beat scheduler (periodic tasks):
+To start the beat scheduler (periodic tasks)::
 
-    celery -A app.workers.celery_app.celery beat --loglevel=info
+    celery -A app.workers.celery_app beat --loglevel=info
 """
 
 from celery import Celery
 
 from app.core.config import settings
 
-celery = Celery(
+celery_app = Celery(
     "revenue_os",
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
 )
 
-celery.conf.update(
+celery_app.conf.update(
     task_serializer="json",
     accept_content=["json"],
     result_serializer="json",
     result_expires=3600,
     timezone="UTC",
     enable_utc=True,
-    task_track_started=True,
 )
 
-celery.autodiscover_tasks(["app.workers.tasks"])
+celery_app.autodiscover_tasks(["app.workers.tasks"])

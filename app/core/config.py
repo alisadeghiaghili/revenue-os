@@ -1,53 +1,53 @@
 """
-app/core/config.py — Centralised settings loader.
+Application configuration via pydantic-settings.
 
-All configuration is loaded from the .env file (or real environment variables)
-via pydantic-settings.  Import the singleton `settings` wherever you need
-access to configuration values:
+Usage::
 
     from app.core.config import settings
+
     print(settings.DATABASE_URL)
+    print(settings.APP_ENV)
 
-Do **not** read os.environ directly in other modules.
+All values are loaded from environment variables or the .env file at the
+project root. Variable names are case-insensitive.
 """
-
-from typing import List
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        case_sensitive=False,
-        extra="ignore",
-    )
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
-    # ── database ─────────────────────────────────────────────────────────────
+    # Database
     DATABASE_URL: str
 
-    @field_validator("DATABASE_URL")
-    @classmethod
-    def database_url_must_be_postgres(cls, v: str) -> str:
-        if not v.startswith("postgresql"):
-            raise ValueError("DATABASE_URL must start with 'postgresql'")
-        return v
-
-    # ── redis / celery ────────────────────────────────────────────────────────
+    # Redis / Celery
     REDIS_URL: str
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
 
-    # ── app ───────────────────────────────────────────────────────────────────
+    # Security
     SECRET_KEY: str
+
+    # App
     DEBUG: bool = False
     APP_ENV: str = "development"
 
-    # ── cors ──────────────────────────────────────────────────────────────────
-    # Comma-separated list of allowed origins, e.g. "http://localhost:3000"
-    CORS_ORIGINS: List[str] = ["*"]
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
+        if not v.startswith("postgresql"):
+            raise ValueError("DATABASE_URL must start with 'postgresql'")
+        return v
+
+    @field_validator("APP_ENV")
+    @classmethod
+    def validate_app_env(cls, v: str) -> str:
+        allowed = {"development", "staging", "production"}
+        if v not in allowed:
+            raise ValueError(f"APP_ENV must be one of {allowed}")
+        return v
 
 
-# Module-level singleton — import this, not the class.
 settings = Settings()
